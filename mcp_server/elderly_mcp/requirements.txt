@@ -1,0 +1,13 @@
+# OfficeEcho 屏幕端 MCP Server 依赖
+# Python >= 3.9
+
+# MCP 服务器核心
+mcp>=0.9.0
+
+# Pydantic 数据验证
+pydantic>=2.0.0
+
+# HTTP 请求（可选，用于API调用）
+requests>=2.28.0
+opencv-python
+numpy

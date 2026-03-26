@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* 隐藏滚动条但保持滚动功能 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+}
+
+@layer base {
+  /* 全局高对比度基线 WCAG AA+ */
+  body {
+    @apply antialiased;
+  }
+
+  /* 屏幕端专用样式 */
+  .elderly-mode {
+    @apply text-elderly-base leading-relaxed-plus;
+  }
+
+  /* 大按钮基础样式 */
+  .btn-elderly {
+    @apply min-h-touch-lg min-w-touch-lg text-elderly-lg font-bold rounded-2xl
+           shadow-lg active:scale-95 transition-transform duration-150;
+  }
+
+  /* 无障碍焦点环 */
+  *:focus-visible {
+    @apply outline-none ring-4 ring-primary-400 ring-offset-2;
+  }
+}
+
+@layer components {
+  /* 卡片基础样式 */
+  .card {
+    @apply bg-white rounded-2xl shadow-lg p-6;
+  }
+
+  /* 屏幕端卡片 - 更大间距和字体 */
+  .card-elderly {
+    @apply card p-8 text-elderly-base;
+  }
+
+  /* 警示级别 */
+  .alert-low {
+    @apply bg-warning-light text-gray-900;
+  }
+
+  .alert-medium {
+    @apply bg-warning-medium text-white;
+  }
+
+  .alert-high {
+    @apply bg-warning-high text-white;
+  }
+}
+
+/* 动画 - 避免频闪 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-in-out;
+}
+
+.animate-breathe {
+  animation: breathe 2s ease-in-out infinite;
+}
