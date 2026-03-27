@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Mic, Users, Image, QrCode, RotateCw, PenSquare ,Phone,FileText} from 'lucide-react';
 import { AvatarStage } from '../components/AvatarStage';
 import { AvatarErrorBoundary } from '../components/AvatarErrorBoundary';
@@ -23,6 +24,11 @@ import { io } from 'socket.io-client';
 
 const DESIGN_WIDTH = 1080;
 const DESIGN_HEIGHT = 1920;
+
+// 和风天气API配置
+const PUBLIC_API_KEY = "bc9cd001561044d7a18ec315437f37cf"; // API密钥
+const PUBLIC_API_HOST = "k42k5pca54.re.qweatherapi.com"; // 公共API地址
+const CITY_ID = "101220401"; // 淮南
 
 /**
  * 屏幕端主页
@@ -730,8 +736,60 @@ export const HomePage: React.FC = () => {
   const currentDay = now.toLocaleDateString('zh-CN', {
     weekday: 'long',
   });
-  // 模拟天气信息（实际使用时应从天气API获取）
-  const weather = '晴 22°C';
+  // 使用和风天气API获取淮南天气信息
+  const [weather, setWeather] = useState<string>('晴 22°C');
+  const [weatherDetails, setWeatherDetails] = useState<{ humidity: string; wind: string }>({ humidity: '50%', wind: '微风' });
+  const [weatherLoading, setWeatherLoading] = useState<boolean>(true);
+  
+  // 加载天气信息
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        setWeatherLoading(true);
+        
+        const response = await axios.get(
+          `https://${PUBLIC_API_HOST}/v7/weather/now`,
+          {
+            params: {
+              location: CITY_ID,
+              key: PUBLIC_API_KEY,
+              lang: 'zh',         // 中文返回
+              unit: 'm',          // 公制单位
+              gzip: 'n'           // 不压缩
+            },
+            timeout: 5000,        // 5秒超时
+          }
+        );
+        
+        if (response.data.code === "200") {
+          const data = response.data.now;
+          setWeather(`${data.text} ${data.temp}℃`);
+          setWeatherDetails({
+            humidity: `${data.humidity}%`,
+            wind: `${data.windDir} ${data.windScale}级`
+          });
+          console.log('✅ 天气数据获取成功:', data);
+        } else {
+          // 处理API错误码
+          console.error('天气API错误:', response.data.code, response.data.message);
+          setWeather("数据更新中");
+          setWeatherDetails({ humidity: '50%', wind: '微风' });
+        }
+      } catch (err: any) {
+        console.error('获取淮南天气失败:', err.message);
+          setWeather("网络异常"); // 更友好的错误提示
+          setWeatherDetails({ humidity: '50%', wind: '微风' });
+      } finally {
+        setWeatherLoading(false);
+      }
+    };
+
+    fetchWeather();
+    
+    // 每30分钟更新一次天气
+    const interval = setInterval(fetchWeather, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // 切换麦克风开关
   const handleMicClick = async () => {
@@ -937,9 +995,15 @@ export const HomePage: React.FC = () => {
                   {currentDate}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sm drop-shadow-md">
-                <span>{currentDay}</span>
-                <span className="text-yellow-300">☀️ {weather}</span>
+              <div className="flex flex-col gap-1 text-sm drop-shadow-md">
+                <div className="flex items-center gap-2">
+                  <span>{currentDay}</span>
+                  <span className="text-yellow-300 text-lg font-bold">☀️ {weather}</span>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-blue-500">
+                  <span>湿度: {weatherDetails.humidity}</span>
+                  <span>风力: {weatherDetails.wind}</span>
+                </div>
               </div>
             </div>
           </div>
